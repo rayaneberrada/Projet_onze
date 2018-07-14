@@ -1,0 +1,25 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+
+
+[packages]
+
+selenium = "*"
+django = "*"
+pillow = "*"
+requests = "*"
+"psycopg2" = "*"
+gunicorn = "*"
+django-heroku = "*"
+pylint = "*"
+coverage = "*"
+httpretty = "*"
+raven = "*"
+
