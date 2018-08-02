@@ -1,6 +1,6 @@
 import unittest
 from django.test import Client, TestCase
-from django.urls import reverse
+from django.urls import reverse, resolve
 from aliments_manager.forms import ContactForm
 from django.contrib.auth.models import User
 
@@ -8,6 +8,15 @@ class SimpleTest(TestCase):
     def setUp(self):
         # Every test needs a client.
         self.client = Client()
+
+    def test_urls(self):
+        urls = [('/', 'home'), ('/results/steak/1/', 'results'), ('/registration/', 'registration'),\
+                ('/connection/', 'connection'), ('/disconnection/', 'disconnection'), ('/account/', 'account'),\
+                ('/add_favorite/', 'add_favorite'), ('/favorites/1/', 'favorites'), ('/aliment/1234567891011/', 'aliment'),\
+                ('/legalmentions/', 'legalmentions')]
+        for url in urls:
+            resolver = resolve(url[0])
+            self.assertEqual(resolver.url_name, url[1])
 
     def test_home_form_valid(self):
         form = ContactForm(data={"sujet":"steak"})
