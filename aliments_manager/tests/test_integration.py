@@ -1,10 +1,12 @@
 from django.test import LiveServerTestCase
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from django.contrib.auth.models import User
 import time
+import os
 
 
 class MySeleniumTests(LiveServerTestCase):
@@ -109,3 +111,38 @@ class MySeleniumTests(LiveServerTestCase):
         response = self.browser.find_element_by_xpath("/html/body/header/div/div/div/h1/strong")
         self.assertEqual(response.text, "LE MOT DE PASSE A BIEN ÉTÉ CHANGÉ") 
         self.browser.quit()   
+
+class FavoriteExtraction(LiveServerTestCase):
+    def setUp(self):
+        self.options = Options();
+        self.options.set_preference("browser.download.folderList",2);
+        self.options.set_preference("browser.download.manager.showWhenStarting", False);
+        self.options.set_preference("browser.download.dir",os.getcwd());
+        self.options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream,application/vnd.ms-excel");
+        self.browser = webdriver.Firefox(firefox_options=self.options);
+        self.browser.get(self.live_server_url)
+
+    def testFavoriteExtraction(self):
+        connection_page = self.browser.find_element_by_id('account')
+        user_test = User.objects.create_user("test_use", "test@gmail.com", "test")
+        check_user = User.objects.all()
+
+        connection_page = self.browser.find_element_by_id('account')
+        connection_page.click()
+        username_connection = self.browser.find_element_by_name('nameUser')
+        username_connection.send_keys("test_use")
+        password_connection = self.browser.find_element_by_name('password')
+        password_connection.send_keys('test')
+        password_connection.submit()
+        check_homePage =  WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, "//h2")))
+
+        favorite_page = self.browser.find_element_by_id('carrot')
+        favorite_page.click()
+
+        download_button = self.browser.find_element_by_id('download')
+        download_button.click()
+
+        file_dir = os.getcwd()
+        file_path = file_dir + '/aliments_manager/static/aliments_manager/files/favorites.csv'
+        self.assertEqual(True, os.path.exists(file_path))
+        self.browser.quit()

@@ -78,6 +78,10 @@
      -    <a id="next" href="{% url 'favorites' aliments.next_page_number %}">Suivante</a>
         {% endif %}
       </div>
+      <div class="container text-center">
+        <button id="download"><i class="fa fa-download"></i> <a href=""
+        >Télécharger les favoris</a></button>
+      </div>
     </section>
 
     {% include 'aliments_manager/footer.html' %}

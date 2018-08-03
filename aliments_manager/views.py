@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from aliments_manager.models import Favorites
+import csv
+import os
 
 
 # Create your views here.
@@ -221,3 +223,17 @@ def show_legalmentions(request):
     Display the page containing the legal mentions
     """
     return render(request, 'aliments_manager/legalmentions.html')
+
+@csrf_exempt
+def create_favorites_file(request):
+    actualUser = request.user.username
+    actualUserObject = User.objects.get(username=actualUser)
+    userFavorites = Favorites.objects.filter(user=actualUserObject)
+    favoritesList = []
+    for favorite in userFavorites:
+        favoritesList.append(str(favorite))
+    print(type(favoritesList),type(favoritesList[0]))
+    with open(os.getcwd() + '/aliments_manager/static/aliments_manager/files/favorites.csv', 'w') as myfile:
+        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+        wr.writerow(favoritesList)
+    return JsonResponse({"msg":"yes"})
