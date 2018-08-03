@@ -3,6 +3,7 @@ from django.test import Client, TestCase
 from django.urls import reverse, resolve
 from aliments_manager.forms import ContactForm
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 
 class SimpleTest(TestCase):
     def setUp(self):
@@ -64,6 +65,40 @@ class SimpleTest(TestCase):
     def test_registration_view_redirect(self):
         response = self.client.post(reverse("registration"), {"sujet":"steak"}, follow=True)
         self.assertRedirects(response, "/results/steak/1/")
+
+    def test_change_password_return(self):
+        rayane = User.objects.create_user(username="rayane", password="1234")
+        url = reverse("change_password")
+        logged_in = self.client.login(username='rayane', password='1234')
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'aliments_manager/change_password.html')
+
+    def test_change_password_redirect(self):
+        url = reverse("change_password")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_change_password_succeed(self):
+        rayane = User.objects.create_user(username="rayane", password="1234")
+        url = reverse("change_password")
+        logged_in = self.client.login(username='rayane', password='1234')
+        response = self.client.post(url, {"actualPassword":"1234", "newPassword":"12345", "confirmNew":"12345"})
+        self.assertRedirects(response, "/password_changed")
+
+    def test_change_password_wrong_password(self):
+        rayane = User.objects.create_user(username="rayane", password="1234")
+        url = reverse("change_password")
+        logged_in = self.client.login(username='rayane', password='1234')
+        response = self.client.post(url, {"actualPassword":"12345", "newPassword":"12345", "confirmNew":"12345"})
+        self.assertTemplateUsed(response, 'aliments_manager/change_password.html')
+        
+    def test_change_password_wrong_confirmation(self):
+        rayane = User.objects.create_user(username="rayane", password="1234")
+        url = reverse("change_password")
+        logged_in = self.client.login(username='rayane', password='1234')
+        response = self.client.post(url, {"actualPassword":"1234", "newPassword":"123456", "confirmNew":"12345"})
+        self.assertTemplateUsed(response, 'aliments_manager/change_password.html')
 
     def test_conncetion_view_return(self):
         url = reverse("connection")
