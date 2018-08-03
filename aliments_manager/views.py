@@ -1,6 +1,6 @@
 from .functionnalities import Functionnalities
 from django.shortcuts import render, redirect
-from .forms import ContactForm, RegistrationForm, ConnectionForm
+from .forms import ContactForm, RegistrationForm, ConnectionForm, ChangePasswordForm
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -70,6 +70,41 @@ def registration(request):
 
     context = {"form":form, "search":choice[0]}
     return render(request, 'aliments_manager/registration.html', context)
+
+def change_password(request):
+    """
+    View used to change the user passord 
+    """ 
+    choice = Functionnalities.searchFormValid(request)
+    if choice[0] == "redirect":
+        return redirect(choice[1])
+
+    username = request.user.username
+    if username == "":
+        return redirect('connection')
+
+    
+    form = ChangePasswordForm(request.POST or None)
+    context = {"form":form, "wrong_confirmation": False, "wrong_pasword": False}
+    if form.is_valid():
+        u = User.objects.get(username=username)
+        password = form.cleaned_data['actualPassword']
+        newPassword = form.cleaned_data['newPassword']
+        confirmNew = form.cleaned_data['confirmNew']
+        if u.check_password(password) and newPassword == confirmNew:
+            u.set_password(newPassword)
+            u.save()
+            return redirect('password_changed')
+        elif not u.check_password(password):
+            context={"form":form, "password":False}
+        elif newPassword != confirmNew:
+            context={"form":form, "confirmation":False}
+ 
+    return render(request, 'aliments_manager/change_password.html', context)
+
+def password_changed(request):
+    return render(request, 'aliments_manager/password_changed.html')
+
 
 def connection(request):
     """

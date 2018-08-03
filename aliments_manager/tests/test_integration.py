@@ -81,4 +81,31 @@ class MySeleniumTests(LiveServerTestCase):
         self.assertNotEqual(len(favorites), 0)
         self.browser.quit()
 
+    def test_change_password(self):
+        connection_page = self.browser.find_element_by_id('account')
+        user_test = User.objects.create_user("test_use", "test@gmail.com", "test")
+        connection_page.click()
+        username_connection = self.browser.find_element_by_name('nameUser')
+        username_connection.send_keys("test_use")
+        password_connection = self.browser.find_element_by_name('password')
+        password_connection.send_keys('test')
+        password_connection.submit()
+        check_homePage =  WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, "//h2")))
+        connection_page = self.browser.find_element_by_id('account')
+        connection_page.click()
 
+        link_to_change_password = self.browser.find_element_by_xpath("/html/body/header/div/div/div[2]/a")
+        link_to_change_password.click()
+
+        password = self.browser.find_element_by_name('actualPassword')
+        password.send_keys("test")
+        newPassword = self.browser.find_element_by_name('newPassword')
+        newPassword.send_keys('aaaa')
+        confirmNew = self.browser.find_element_by_name('confirmNew')
+        confirmNew.send_keys('aaaa')
+        confirmNew.submit()
+
+        check_homePage =  WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/header/div/div/div/h1/strong[contains(text(), 'changé')]")))
+        response = self.browser.find_element_by_xpath("/html/body/header/div/div/div/h1/strong")
+        self.assertEqual(response.text, "LE MOT DE PASSE A BIEN ÉTÉ CHANGÉ") 
+        self.browser.quit()   
